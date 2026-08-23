@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<!-- ============================================================
+     FreshBite – Online Food Ordering Platform
+     Free Web Development Internship Online Task (WD-EC-001)
+     ------------------------------------------------------------
+     Single-page application: every "page" is a <section class="view">
+     and js/app.js shows/hides them based on the URL hash (#/home,
+     #/menu, #/cart ...). All data comes from js/data.js.
+     ============================================================ -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FreshBite – Order delicious food from the best local restaurants. Fast delivery, fresh ingredients, happy bellies.">
+  <title>FreshBite – Online Food Ordering</title>
+
+  <!-- Fonts: Baloo 2 (playful headings) + Poppins (clean body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Project styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- ======================= TOAST NOTIFICATIONS ======================= -->
+  <div id="toastContainer" aria-live="polite"></div>
+
+  <!-- ============================ NAVBAR ============================ -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-inner">
+      <a href="#/home" class="logo" aria-label="FreshBite home">
+        <span class="logo-icon">🍕</span> Fresh<span>Bite</span>
+      </a>
+
+      <nav>
+        <ul class="nav-links" id="navLinks">
+          <li><a href="#/home"        data-nav="home">Home</a></li>
+          <li><a href="#/restaurants" data-nav="restaurants">Restaurants</a></li>
+          <li><a href="#/menu"        data-nav="menu">Menu</a></li>
+          <li><a href="#/about"       data-nav="about">About</a></li>
+          <li><a href="#/contact"     data-nav="contact">Contact</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="icon-btn" id="wishlistBtn" title="Wishlist" aria-label="Wishlist">
+          <i class="fa-regular fa-heart"></i><span class="badge" id="wishlistCount">0</span>
+        </button>
+        <button class="icon-btn" id="accountBtn" title="Account" aria-label="Account">
+          <i class="fa-regular fa-user"></i>
+        </button>
+        <button class="icon-btn cart-btn" id="cartBtn" title="Cart" aria-label="Cart">
+          <i class="fa-solid fa-cart-shopping"></i><span class="badge" id="cartCount">0</span>
+        </button>
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+  <!-- ============================ HOME VIEW ============================ -->
+  <section class="view" id="view-home" data-view="home">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="container hero-inner">
+        <div class="hero-text">
+          <span class="hero-tag">🛵 Fresh · Fast · Delivered</span>
+          <h1>Craving Something <span class="highlight">Delicious?</span></h1>
+          <p class="hero-sub">Discover the best dishes from 8+ hand-picked kitchens around you.
+            Hot, fresh and at your doorstep in under 45 minutes.</p>
+          <div class="hero-cta">
+            <a href="#/menu" class="btn btn-primary btn-lg">Order Now <i class="fa-solid fa-arrow-right"></i></a>
+            <a href="#/restaurants" class="btn btn-outline btn-lg">Browse Restaurants</a>
+          </div>
+          <div class="hero-stats">
+            <div class="stat"><strong>8+</strong><span>Restaurants</span></div>
+            <div class="stat"><strong>30+</strong><span>Dishes</span></div>
+            <div class="stat"><strong>~30 min</strong><span>Avg. Delivery</span></div>
+            <div class="stat"><strong>4.6 ★</strong><span>App Rating</span></div>
+          </div>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="hero-blob"></div>
+          <div class="hero-plate">🍽️</div>
+          <div class="float-emoji e1">🍕</div>
+          <div class="float-emoji e2">🍔</div>
+          <div class="float-emoji e3">🍣</div>
+          <div class="float-emoji e4">🥗</div>
+          <div class="float-emoji e5">🍩</div>
+          <div class="hero-card hc1">
+            <span class="hc-emoji">🛵</span>
+            <div><strong>Order Delivered!</strong><small>Your food is here · 28 min</small></div>
+          </div>
+          <div class="hero-card hc2">
+            <span class="hc-emoji">⭐</span>
+            <div><strong>4.8 Rated Dish</strong><small>Royal Chicken Biryani</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Restaurant categories -->
+    <div class="section container" id="home-categories">
+      <div class="section-head">
+        <h2>What are you craving today?</h2>
+        <p>Pick a category and we'll take it from there</p>
+      </div>
+      <div class="category-tiles" id="categoryTiles"><!-- tiles rendered by JS --></div>
+    </div>
+
+    <!-- Featured dishes -->
+    <div class="section section-alt" id="home-featured">
+      <div class="container">
+        <div class="section-head">
+          <h2>Featured Dishes <span class="emoji">🔥</span></h2>
+          <p>Hand-picked favourites our customers can't stop ordering</p>
+        </div>
+        <div class="food-grid" id="featuredGrid"><!-- rendered by JS --></div>
+        <div class="center"><a href="#/menu" class="btn btn-outline">View Full Menu</a></div>
+      </div>
+    </div>
+
+    <!-- Special offers -->
+    <div class="section container" id="home-offers">
+      <div class="section-head">
+        <h2>Special Offers <span class="emoji">🎁</span></h2>
+        <p>Apply these codes at checkout and watch the total shrink</p>
+      </div>
+      <div class="offers-grid" id="offersGrid"><!-- rendered by JS --></div>
+    </div>
+
+    <!-- Popular restaurants -->
+    <div class="section section-alt" id="home-restaurants">
+      <div class="container">
+        <div class="section-head">
+          <h2>Popular Restaurants <span class="emoji">🏪</span></h2>
+          <p>The kitchens our city loves the most</p>
+        </div>
+        <div class="restaurant-grid" id="popularRestaurants"><!-- rendered by JS --></div>
+        <div class="center"><a href="#/restaurants" class="btn btn-outline">See All Restaurants</a></div>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="section container" id="home-how">
+      <div class="section-head">
+        <h2>How FreshBite Works</h2>
+        <p>Three tiny steps between you and your next favourite meal</p>
+      </div>
+      <div class="steps-grid">
+        <div class="step-card">
+          <div class="step-num">1</div><div class="step-emoji">📍</div>
+          <h3>Choose Your Food</h3>
+          <p>Browse restaurants and menus, filter by veg, vegan or gluten-free and read real reviews.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">2</div><div class="step-emoji">🛒</div>
+          <h3>Add to Cart</h3>
+          <p>Adjust quantities, apply a coupon and pick a delivery slot that suits your schedule.</p>
+        </div>
+        <div class="step-card">
+          <div class="step-num">3</div><div class="step-emoji">🛵</div>
+          <h3>Track & Enjoy</h3>
+          <p>Pay by card, UPI or cash and follow your order live until it reaches your door.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="section section-alt" id="home-testimonials">
+      <div class="container">
+        <div class="section-head">
+          <h2>What Our Foodies Say</h2>
+          <p>Over 12,000 happy deliveries and counting</p>
+        </div>
+        <div class="testimonials-grid" id="testimonialsGrid"><!-- rendered by JS --></div>
+      </div>
+    </div>
+
+    <!-- CTA banner -->
+    <div class="container">
+      <div class="cta-banner">
+        <div>
+          <h2>Hungry? Your next meal is 30 minutes away.</h2>
+          <p>Use code <strong>FRESH10</strong> for 20% off your first order.</p>
+        </div>
+        <a href="#/menu" class="btn btn-light btn-lg">Start Ordering</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================= RESTAURANTS VIEW ========================= -->
+  <section class="view" id="view-restaurants" data-view="restaurants">
+    <div class="page-hero">
+      <div class="container">
+        <h1>Restaurants Near You</h1>
+        <p>8 kitchens · 8 cuisines · endless cravings</p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="filter-bar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="restSearch" placeholder="Search restaurants...">
+        </div>
+        <select id="cuisineFilter" aria-label="Filter by cuisine">
+          <option value="all">All Cuisines</option>
+          <option value="Italian">Italian</option>
+          <option value="American">American</option>
+          <option value="Indian">Indian</option>
+          <option value="Japanese">Japanese</option>
+          <option value="Healthy">Healthy</option>
+          <option value="Mexican">Mexican</option>
+          <option value="Desserts">Desserts</option>
+          <option value="Asian">Asian</option>
+        </select>
+        <select id="ratingFilter" aria-label="Filter by rating">
+          <option value="all">Any Rating</option>
+          <option value="4.5">4.5★ & above</option>
+          <option value="4">4.0★ & above</option>
+        </select>
+        <select id="priceFilter" aria-label="Filter by price">
+          <option value="all">Any Price</option>
+          <option value="low">Budget (under $20)</option>
+          <option value="mid">Mid ($20–$25)</option>
+          <option value="high">Premium ($25+)</option>
+        </select>
+      </div>
+      <p class="result-count" id="restCount"></p>
+      <div class="restaurant-grid" id="restaurantsGrid"><!-- rendered by JS --></div>
+    </div>
+  </section>
+
+  <!-- =========================== MENU VIEW =========================== -->
+  <section class="view" id="view-menu" data-view="menu">
+    <div class="page-hero">
+      <div class="container">
+        <h1>Explore Our Menu</h1>
+        <p>32 mouth-watering dishes across 8 categories</p>
+      </div>
+    </div>
+    <div class="container">
+      <div class="menu-toolbar">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="menuSearch" placeholder="Search dishes...">
+        </div>
+        <select id="sortFilter" aria-label="Sort dishes">
+          <option value="popular">Sort: Most Popular</option>
+          <option value="rating">Sort: Highest Rated</option>
+          <option value="priceLow">Sort: Price · Low to High</option>
+          <option value="priceHigh">Sort: Price · High to Low</option>
+        </select>
+      </div>
+
+      <div class="chips" id="categoryChips"><!-- rendered by JS --></div>
+
+      <div class="diet-filters">
+        <span class="diet-label"><i class="fa-solid fa-filter"></i> Dietary:</span>
+        <button class="diet-toggle veg" id="dietVeg" data-diet="veg" aria-pressed="false">
+          <span class="diet-dot veg-dot"></span> Veg
+        </button>
+        <button class="diet-toggle nonveg" id="dietNonVeg" data-diet="nonveg" aria-pressed="false">
+          <span class="diet-dot nonveg-dot"></span> Non-Veg
+        </button>
+        <button class="diet-toggle vegan" id="dietVegan" data-diet="vegan" aria-pressed="false">
+          <i class="fa-solid fa-leaf"></i> Vegan
+        </button>
+        <button class="diet-toggle gf" id="dietGF" data-diet="gf" aria-pressed="false">
+          <i class="fa-solid fa-wheat-awn-circle-exclamation"></i> Gluten-Free
+        </button>
+        <button class="link-btn" id="clearFilters">Clear all</button>
+      </div>
+
+      <p class="result-count" id="menuCount"></p>
+      <div class="food-grid" id="menuGrid"><!-- rendered by JS --></div>
+    </div>
+  </section>
+
+  <!-- ======================== PRODUCT DETAIL VIEW ======================== -->
+  <section class="view" id="view-product" data-view="product">
+    <div class="container" id="productDetail"><!-- rendered by JS --></div>
+  </section>
+
+  <!-- =========================== CART VIEW =========================== -->
+  <section class="view" id="view-cart" data-view="cart">
+    <div class="page-hero">
+      <div class="container">
+        <h1>Your Cart <i class="fa-solid fa-cart-shopping"></i></h1>
+        <p>Review your items before checkout</p>
+      </div>
+    </div>
+    <div class="container cart-layout">
+      <div id="cartItems"><!-- rendered by JS --></div>
+      <aside class="summary-card" id="cartSummary"><!-- rendered by JS --></aside>
+    </div>
+  </section>
+
+  <!-- ========================= CHECKOUT VIEW ========================= -->
+  <section class="view" id="view-checkout" data-view="checkout">
+    <div class="page-hero">
+      <div class="container">
+        <h1>Checkout</h1>
+        <p>Almost there – tell us where to send the deliciousness</p>
+      </div>
+    </div>
+    <div class="container checkout-layout">
+      <form class="checkout-form" id="checkoutForm" novalidate>
+        <div class="form-card">
+          <h3><i class="fa-solid fa-location-dot"></i> Delivery Address</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="addrName">Full Name *</label>
+              <input type="text" id="addrName" placeholder="e.g. Alex Kumar" required>
+              <small class="error-msg"></small>
+            </div>
+            <div class="form-group">
+              <label for="addrPhone">Phone Number *</label>
+              <input type="tel" id="addrPhone" placeholder="10-digit mobile number" maxlength="10" required>
+              <small class="error-msg"></small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="addrLine">Street Address *</label>
+            <input type="text" id="addrLine" placeholder="Flat / House no, Street, Area" required>
+            <small class="error-msg"></small>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="addrCity">City *</label>
+              <input type="text" id="addrCity" placeholder="e.g. Chennai" required>
+              <small class="error-msg"></small>
+            </div>
+            <div class="form-group">
+              <label for="addrPincode">Pincode *</label>
+              <input type="text" id="addrPincode" placeholder="6-digit pincode" maxlength="6" required>
+              <small class="error-msg"></small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="addrInstructions">Delivery Instructions <span class="muted">(optional)</span></label>
+            <textarea id="addrInstructions" rows="2" placeholder="e.g. Leave at the door, ring the bell twice..."></textarea>
+          </div>
+          <label class="checkbox-row">
+            <input type="checkbox" id="saveAddress" checked>
+            <span>Save this address to my account</span>
+          </label>
+        </div>
+
+        <div class="form-card">
+          <h3><i class="fa-regular fa-clock"></i> Delivery Time</h3>
+          <div class="form-group">
+            <label for="deliverySlot">Choose a slot</label>
+            <select id="deliverySlot"><!-- options rendered by JS --></select>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <h3><i class="fa-regular fa-credit-card"></i> Payment Method</h3>
+          <div class="payment-options">
+            <label class="payment-option">
+              <input type="radio" name="payment" value="card" checked>
+              <span class="payment-box"><i class="fa-regular fa-credit-card"></i> Credit / Debit Card</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="payment" value="upi">
+              <span class="payment-box"><i class="fa-solid fa-mobile-screen"></i> UPI</span>
+            </label>
+            <label class="payment-option">
+              <input type="radio" name="payment" value="cod">
+              <span class="payment-box"><i class="fa-solid fa-money-bill-wave"></i> Cash on Delivery</span>
+            </label>
+          </div>
+
+          <div class="payment-details" id="cardFields">
+            <div class="form-group">
+              <label for="cardNumber">Card Number</label>
+              <input type="text" id="cardNumber" placeholder="4242 4242 4242 4242" maxlength="19" inputmode="numeric">
+              <small class="error-msg"></small>
+            </div>
+            <div class="form-group">
+              <label for="cardName">Name on Card</label>
+              <input type="text" id="cardName" placeholder="As printed on card">
+              <small class="error-msg"></small>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="cardExpiry">Expiry (MM/YY)</label>
+                <input type="text" id="cardExpiry" placeholder="12/28" maxlength="5">
+                <small class="error-msg"></small>
+              </div>
+              <div class="form-group">
+                <label for="cardCvv">CVV</label>
+                <input type="password" id="cardCvv" placeholder="•••" maxlength="3" inputmode="numeric">
+                <small class="error-msg"></small>
+              </div>
+            </div>
+            <p class="sim-note"><i class="fa-solid fa-circle-info"></i> This is a simulated payment – no real money moves.</p>
+          </div>
+
+          <div class="payment-details hidden" id="upiFields">
+            <div class="form-group">
+              <label for="upiId">UPI ID</label>
+              <input type="text" id="upiId" placeholder="yourname@upi">
+              <small class="error-msg"></small>
+            </div>
+            <p class="sim-note"><i class="fa-solid fa-circle-info"></i> Simulated UPI – any valid-looking ID works.</p>
+          </div>
+
+          <div class="payment-details hidden" id="codFields">
+            <p class="sim-note"><i class="fa-solid fa-hand-holding-dollar"></i> Pay with cash when your order arrives. Please keep exact change ready.</p>
+          </div>
+        </div>
+      </form>
+
+      <aside class="summary-card" id="checkoutSummary"><!-- rendered by JS --></aside>
+    </div>
+  </section>
+
+  <!-- ====================== ORDER TRACKING VIEW ====================== -->
+  <section class="view" id="view-orders" data-view="orders">
+    <div class="page-hero">
+      <div class="container">
+        <h1>Track Your Order</h1>
+        <p>Sit tight – good things are on the way</p>
+      </div>
+    </div>
+    <div class="container" id="trackingContainer"><!-- rendered by JS --></div>
+  </section>
+
+  <!-- ========================== ACCOUNT VIEW ========================== -->
+  <section class="view" id="view-account" data-view="account">
+    <div class="page-hero">
+      <div class="container">
+        <h1>My Account</h1>
+        <p>Your profile, orders, addresses and wishlist</p>
+      </div>
+    </div>
+    <div class="container" id="accountContent"><!-- rendered by auth.js --></div>
+  </section>
+
+  <!-- =========================== ABOUT VIEW =========================== -->
+  <section class="view" id="view-about" data-view="about">
+    <div class="page-hero">
+      <div class="container">
+        <h1>Our Story</h1>
+        <p>From one food truck to your neighbourhood's favourite kitchen</p>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="about-story">
+        <div class="about-art" aria-hidden="true">
+          <div class="about-emoji-big">👨‍🍳</div>
+          <div class="float-emoji e1">🚚</div>
+          <div class="float-emoji e2">❤️</div>
+          <div class="float-emoji e3">🌿</div>
+        </div>
+        <div class="about-text">
+          <h2>It started with a truck and a dream 🚚</h2>
+          <p>In 2019, founder <strong>Aarav Sharma</strong> parked a battered orange food truck at a
+            street corner with a simple menu and one belief – <em>good food should travel well</em>.</p>
+          <p>Word spread. The truck became a kitchen, the kitchen became eight partner restaurants,
+            and today FreshBite delivers over <strong>12,000 orders a month</strong> – every single one
+            packed like it was for family.</p>
+          <p>We still taste every new dish ourselves before it goes on the menu. If we wouldn't
+            order it twice, it doesn't make the cut.</p>
+          <div class="about-stats">
+            <div><strong>12k+</strong><span>Orders / month</span></div>
+            <div><strong>8</strong><span>Partner kitchens</span></div>
+            <div><strong>4.6★</strong><span>Average rating</span></div>
+            <div><strong>30 min</strong><span>Avg. delivery</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>Meet the Team</h2>
+          <p>The people behind your favourite meals</p>
+        </div>
+        <div class="team-grid" id="teamGrid"><!-- rendered by JS --></div>
+      </div>
+
+      <div class="section">
+        <div class="section-head">
+          <h2>Awards & Recognition</h2>
+          <p>Proof that the late nights taste-testing paid off</p>
+        </div>
+        <div class="awards-grid" id="awardsGrid"><!-- rendered by JS --></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========================== CONTACT VIEW ========================== -->
+  <section class="view" id="view-contact" data-view="contact">
+    <div class="page-hero">
+      <div class="container">
+        <h1>Contact Us</h1>
+        <p>Questions, feedback or just want to say hi? We're all ears.</p>
+      </div>
+    </div>
+    <div class="container contact-layout">
+      <div class="contact-info">
+        <div class="info-card">
+          <div class="info-icon">📍</div>
+          <h3>Visit Us</h3>
+          <p>42 Anna Salai, T. Nagar<br>Chennai, Tamil Nadu 600017</p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">📞</div>
+          <h3>Call Us</h3>
+          <p><a href="tel:+914412345678">+91 44 1234 5678</a><br><a href="tel:+919876543210">+91 98765 43210</a></p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">✉️</div>
+          <h3>Email Us</h3>
+          <p><a href="mailto:hello@freshbite.example">hello@freshbite.example</a><br><a href="mailto:support@freshbite.example">support@freshbite.example</a></p>
+        </div>
+        <div class="info-card">
+          <div class="info-icon">🕒</div>
+          <h3>Opening Hours</h3>
+          <p>Mon – Thu: 9 AM – 11 PM<br>Fri – Sun: 9 AM – 1 AM</p>
+        </div>
+        <div class="map-wrap">
+          <iframe title="FreshBite location map"
+            src="https://www.google.com/maps?q=Chennai,Tamil+Nadu&output=embed"
+            loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+
+      <form class="contact-form form-card" id="contactForm" novalidate>
+        <h3>Send us a message</h3>
+        <div class="form-group">
+          <label for="cName">Your Name *</label>
+          <input type="text" id="cName" placeholder="Full name" required>
+          <small class="error-msg"></small>
+        </div>
+        <div class="form-group">
+          <label for="cEmail">Email *</label>
+          <input type="email" id="cEmail" placeholder="you@example.com" required>
+          <small class="error-msg"></small>
+        </div>
+        <div class="form-group">
+          <label for="cSubject">Subject</label>
+          <input type="text" id="cSubject" placeholder="What's this about?">
+        </div>
+        <div class="form-group">
+          <label for="cMessage">Message *</label>
+          <textarea id="cMessage" rows="5" placeholder="Tell us everything..." required></textarea>
+          <small class="error-msg"></small>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          <i class="fa-solid fa-paper-plane"></i> Send Message
+        </button>
+      </form>
+    </div>
+  </section>
+  </main>
+
+  <!-- ============================= FOOTER ============================= -->
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a href="#/home" class="logo footer-logo"><span class="logo-icon">🍕</span> Fresh<span>Bite</span></a>
+        <p>Delivering happiness, one meal at a time. Fresh ingredients, honest prices and
+          delivery that actually shows up on time.</p>
+        <div class="socials">
+          <a href="#/home" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+          <a href="#/home" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+          <a href="#/home" aria-label="X / Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+          <a href="#/home" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#/home">Home</a></li>
+          <li><a href="#/restaurants">Restaurants</a></li>
+          <li><a href="#/menu">Menu</a></li>
+          <li><a href="#/about">About Us</a></li>
+          <li><a href="#/contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>My Account</h4>
+        <ul>
+          <li><a href="#/account">Profile</a></li>
+          <li><a href="#/account">Order History</a></li>
+          <li><a href="#/account">Wishlist</a></li>
+          <li><a href="#/cart">Cart</a></li>
+        </ul>
+      </div>
+      <div class="footer-col footer-news">
+        <h4>Get Fresh Deals</h4>
+        <p>Weekly offers, straight to your inbox. No spam, promise.</p>
+        <form class="newsletter" id="newsletterForm">
+          <input type="email" id="newsletterEmail" placeholder="you@example.com" aria-label="Email for newsletter">
+          <button type="submit" class="btn btn-primary" aria-label="Subscribe"><i class="fa-solid fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="container">
+        <p>© 2026 FreshBite · Built with ❤️ for the Free Web Development Internship (WD-EC-001) ·
+          HTML5 · CSS3 · JavaScript</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================= AUTH MODAL ========================= -->
+  <div class="modal-overlay hidden" id="authModal" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <div class="modal">
+      <button class="modal-close" id="authModalClose" aria-label="Close">&times;</button>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="loginTabBtn" data-auth-tab="login">Login</button>
+        <button class="auth-tab" id="registerTabBtn" data-auth-tab="register">Register</button>
+      </div>
+
+      <!-- Login form -->
+      <form id="loginForm" class="auth-form" novalidate>
+        <h2 id="authTitle">Welcome back! 👋</h2>
+        <p class="muted">Log in to see your orders, wishlist and saved addresses.</p>
+        <div class="form-group">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="you@example.com" required>
+          <small class="error-msg"></small>
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" placeholder="Your password" required>
+          <small class="error-msg"></small>
+        </div>
+        <p class="form-error hidden" id="loginError"></p>
+        <button type="submit" class="btn btn-primary btn-block">Login</button>
+        <p class="auth-switch">New to FreshBite? <a href="#" id="switchToRegister">Create an account</a></p>
+      </form>
+
+      <!-- Register form -->
+      <form id="registerForm" class="auth-form hidden" novalidate>
+        <h2>Join the feast! 🎉</h2>
+        <p class="muted">Create a free account to unlock wishlist, order history and faster checkout.</p>
+        <div class="form-group">
+          <label for="regName">Full Name</label>
+          <input type="text" id="regName" placeholder="e.g. Alex Kumar" required>
+          <small class="error-msg"></small>
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" placeholder="you@example.com" required>
+          <small class="error-msg"></small>
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Password</label>
+          <input type="password" id="regPassword" placeholder="Min 6 characters" required>
+          <small class="error-msg"></small>
+        </div>
+        <div class="form-group">
+          <label for="regConfirm">Confirm Password</label>
+          <input type="password" id="regConfirm" placeholder="Repeat password" required>
+          <small class="error-msg"></small>
+        </div>
+        <p class="form-error hidden" id="registerError"></p>
+        <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+        <p class="auth-switch">Already have an account? <a href="#" id="switchToLogin">Log in</a></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Back to top -->
+  <button id="backToTop" aria-label="Back to top"><i class="fa-solid fa-arrow-up"></i></button>
+
+  <!-- ============================ SCRIPTS ============================
+       Order matters: data → cart → auth → app (app.js boots the app)
+  ==================================================================== -->
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
